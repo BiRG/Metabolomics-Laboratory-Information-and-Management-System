@@ -1,0 +1,95 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1.1", {packages:["controls"]});
+      google.setOnLoadCallback(drawVisualization);
+
+function drawVisualization() {
+
+    
+    var query = new google.visualization.Query(
+      'https://spreadsheets.google.com/spreadsheet/ccc?key=0Atezel2UVnBpdE5wQkR2Rk5hUGhUd3p6TkRIcFdoemc&hl=en_US#gid=0');  
+    // Send the query with a callback function.
+    query.send(handleQueryResponse);
+  
+}
+
+function handleQueryResponse(response) {
+  if (response.isError()) {
+    alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    return;
+  }
+  
+   // Define a NumberRangeFilter slider control for the 'X' column.
+  var slider = new google.visualization.ControlWrapper({
+    'controlType': 'NumberRangeFilter',
+    'containerId': 'control1',
+    'options': {
+      'filterColumnLabel': 'X',
+      'minValue': 0,
+      'maxValue': 11.6
+    }
+  });
+
+
+  var data = response.getDataTable();
+   // Create and draw the visualization.
+   //var chart = new google.visualization.ScatterChart(
+   //    document.getElementById('visualization'));
+   // Define a bar chart
+  var chart = new google.visualization.ChartWrapper({
+    'chartType': 'ScatterChart',
+    'containerId': 'chart1',
+    'options': {
+                       lineWidth: 1,
+                       pointSize: 0,
+                       title: 'NMR Spectra',
+                       width: 600, height: 400,
+                       vAxis: {title: "Y", titleTextStyle: {color: "green"}},
+                       hAxis: {title: "X", titleTextStyle: {color: "green"}}
+     }
+  });
+
+   /*chart.draw(data, {  lineWidth: 1,
+                     title: 'NMR Spectra',
+                     width: 600, height: 400,
+                     vAxis: {title: "Y", titleTextStyle: {color: "green"}},
+                     hAxis: {title: "X", titleTextStyle: {color: "green"}}}
+             );*/
+
+   // Create the dashboard.
+    var dashboard = new
+google.visualization.Dashboard(document.getElementById('dashboard_div'));
+    // Configure the slider to affect the bar chart
+    dashboard.bind(slider, chart);
+    // Draw the dashboard
+    //dashboard.draw(data);
+    // http://spreadsheets.google.com/ccc?key=pCQbetd-CptGXxxQIG7VFIQ  
+   data.setColumnLabel(0, 'X');
+   data.setColumnLabel(1, 'Y');
+
+/*
+   // Create and populate the data table.
+   var data = new google.visualization.DataTable();
+   data.addColumn('number', 'X');
+   data.addColumn('number', 'Y1');
+   data.addColumn('number', 'Y2');
+   data.addRow([11.6,1,2]);
+   data.addRow([10,2,3]);
+   data.addRow([2,1.5,2.8]);
+*/
+
+  dashboard.draw(data);
+
+  return;
+}
+</script>
+</head>
+<body>
+    <div id="dashboard_div">
+      <!--Divs that will hold each control and chart-->
+      <div id="control1"></div>
+      <div id="chart1"></div>
+    </div>
+</body>
