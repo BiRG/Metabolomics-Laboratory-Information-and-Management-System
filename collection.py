@@ -9,7 +9,7 @@ class Collection:
         conn = httplib.HTTPConnection("birg.cs.wright.edu")
         conn.request("GET","/omics_analysis/spectra_collections/" + str(cid) + ".xml",params,headers)
         r = conn.getresponse()
-        #print r1.status, r1.reason
+        print r.status, r.reason
         if r.status != 200:
             return r
         
