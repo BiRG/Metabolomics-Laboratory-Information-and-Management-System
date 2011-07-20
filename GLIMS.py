@@ -1,6 +1,8 @@
 import gdata.docs.data
 import gdata.docs.client
-import re, os
+import gdata.spreadsheet.service
+
+import re, os, tempfile, bisect
 from collection import *
 
 class Helper:
@@ -9,6 +11,8 @@ class Helper:
         self.client.ssl = True  # Force all API requests through HTTPS
         self.client.http_client.debug = False  # Set to True for debugging HTTP requests
         self.client.ClientLogin(email, password, self.client.source)
+        self.spreadsheets_client = gdata.spreadsheet.service.SpreadsheetsService(source=self.client.source)
+        self.spreadsheets_client.ClientLogin(email, password, self.client.source)
 
     def get_collections(self, root_collection_name):
         res = []
@@ -43,7 +47,7 @@ class Study:
                 self.metadata[c['name']] = {}
                 self.entries[c['name']] = c['entry']
                 for sc in c['sub']:
-                    self.metadata[c['name']][sc['name']] = sc['entry']
+                    self.metadata[c['name']][sc['name']] = sc['entry']    
 
     # Creates a new metadata field called name, unless one already exists.
     def add_metadata_field(self,name):
@@ -76,7 +80,85 @@ class Study:
                     break
                 except:
                     print "Move error. Retrying..."        
+    
+    def get_files_by_value(self,name,value):
+        if self.metadata.has_key(name) == False:
+            return None
+        elif self.metadata[name].has_key(value) == False:
+            return None
+        else:
+            src = self.metadata[name][value].content.src
+            children_feed = self.helper.client.GetDocList(uri=src+'/-/contents')
+            files = []
+            for ce in children_feed.entry:
+                if ce.GetDocumentType() == 'spreadsheet':
+                    files.append(ce)
+            return files
+    
+    def merge_xy_files(self,files):
+        docs_token = self.helper.client.auth_token
+        self.helper.client.auth_token = gdata.gauth.ClientLoginToken(self.helper.spreadsheets_client.GetClientLoginToken())
+        xY = {}
+        sorted_keys = []
+        i = 0
+        for file in files:
+            fd, path = tempfile.mkstemp()
+            self.helper.client.Export(file,path+'.csv')
 
+            # Read and store for later
+            xys = []
+            f = open(path+'.csv','r')
+            for line in f:
+                xys.append(line.split(","))
+            f.close()
+            
+            # Construct the x list from the first file
+            if i == 0:
+                for xy in xys:
+                    x = float(xy[0])
+                    xY[x] = []
+                    sorted_keys.append(x)
+                sorted_keys.reverse()
+            
+            # Initialize for this file
+            for x in sorted_keys:
+                xY[x].append(None)
+                        
+            for xy in xys:
+                x = float(xy[0])
+                y = float(xy[1])
+                x_key = x
+                if xY.has_key(x) == False: # Find the closest key
+                    position = bisect.bisect(sorted_keys,x)
+                    prev_x = None
+                    x_key = None
+                    if position > 0:
+                        prev_x = sorted_keys[position-1]                    
+                    next_x = None
+                    if position < len(sorted_keys)-1:
+                        next_x = sorted_keys[position + 1]
+                    if prev_x == None and next_x == None:
+                        raise("Something is incorrect")
+                    elif prev_x == None:
+                        x_key = next_x
+                    elif next_x == None:
+                        x_key = prev_x
+                    else:
+                        if abs(next_x - x) < abs(prev_x - x):
+                            x_key = next_x
+                        else:
+                            x_key = prev_x
+                if xY[x_key][i] == None: # Not yet added
+                    xY[x_key][i] = y
+                else: # Already added, so average
+                    xY[x_key][i] = (xY[x_key][i] + y)/2
+
+            i = i + 1
+        
+        self.helper.client.auth_token = docs_token
+        sorted_keys.reverse()
+        return xY,sorted_keys
+    
     def upload_files(self,c):
         # Upload the actual data files
         new_spreadsheets = []
@@ -101,15 +183,15 @@ class Study:
         # Now move the metadata
         for name, values in c.metadata.iteritems():
             self.add_metadata_field(name)
-            self.move_into_folder(new_spreadsheets,self.entries[name])
-                        
+            #self.move_into_folder(new_spreadsheets,self.entries[name])
+            
             if isinstance(values,list):
                 for i in range(0,len(values)):
                     self.add_metadata_value(name,str(values[i]))
                     self.move_into_folder(new_spreadsheets[i],self.metadata[name][str(values[i])])
-            #else:
-            #    self.add_metadata_value(name,str(values))
-            #    self.move_into_folder(new_spreadsheets,self.metadata[name][str(values)])   
+            else:
+                self.add_metadata_value(name,str(values))
+                self.move_into_folder(new_spreadsheets,self.metadata[name][str(values)])   
     
 
 ##

@@ -13,11 +13,11 @@ r = c.get_collection(cid,name,password)
 if r.status != 200:
     raise "Failed to get the collection"
 
-email = raw_input('Google E-mail: ')
-password = raw_input("Password: ") #getpass.getpass('Password: ') 
+email = 'glims.test@gmail.com' #raw_input('Google E-mail: ')
+password = 'birglab1' #raw_input("Password: ") #getpass.getpass('Password: ') 
+study_name = 'ANIT' #raw_input("Study name: ")
 
 # Assign the files to folders
-study_name = raw_input("Study name: ")
 helper = glims.Helper(email,password)
 potential_studies = helper.get_collections(study_name)
 if len(potential_studies) > 0:
