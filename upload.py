@@ -1,4 +1,5 @@
-import getpass
+# DCW -- Unused import? 
+#import getpass
 
 import collection
 import glims
