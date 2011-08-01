@@ -10,7 +10,8 @@ class MainHandler(webapp.RequestHandler):
         user = users.get_current_user()
 
         if user:
-            self.response.out.write("""<html>
+            self.response.out.write("""<!DOCTYPE HTML>
+<html>
     <body>
         <form action="/upload" method="post">
             <div><input type="submit" value="Upload the Selected File"></div>
