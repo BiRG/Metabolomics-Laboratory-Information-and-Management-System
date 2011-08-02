@@ -1,29 +1,64 @@
 #!/usr/bin/env python
 # Based on Google's official Python documentation
 import cgi
+
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-class MainHandler(webapp.RequestHandler):
-    def get(self):
+# From upload.py
+#import collection
+#import glims
+#glims = reload(glims)
+
+
+class CopyingHandler(webapp.RequestHandler):
+    def post(self):
         user = users.get_current_user()
 
         if user:
+            name = self.request.POST['birgun'];
+            password = self.request.POST['birgpass'];
+            cid = self.request.POST['birgcolid'];
+            c = collection.Collection()
+            r = c.get_collection(cid,name,password)
+
+            if r.status != 200:
+                raise "Failed to get the collection"
+
+            email = 'glims.test@gmail.com' #raw_input('Google E-mail: ')
+            password = 'birglab1' #raw_input("Password: ") #getpass.getpass('Password: ') 
+            study_name = 'ANIT' #raw_input("Study name: ")
+
+            # Assign the files to folders
+            #helper = glims.Helper(email,password)
+            #potential_studies = helper.get_collections(study_name)
+
+            #if len(potential_studies) > 0:
+            #    study = glims.Study(helper,potential_studies[0]['entry']) # Assume it is the one and only return (later this will have to be dynamic)
+            #else:
+            #    study = glims.Study(helper,study_name)
+
+            #study.upload_files(c)
+            
+            # Report success.
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
+    <head>
+        <title></title>
+    </head>
     <body>
-        <form action="/upload" method="post">
-            <div><input type="submit" value="Upload the Selected File"></div>
-        </form>
-        <form action="/download" method="post">
-            <div><input type="submit" value="Download a File"></div>
-        </form>
+        <!-- Username: %s -->
+        <p>A copy of collection #%d has been transferred from BiRG to Google Docs.</p>
     </body>
 </html>
-""")
+""" % (name,cid))
+
         else:
-            self.redirect(users.create_login_url(self.request.uri))
+            # TODO: Needs to redirect the logged in user back to the root.
+            #self.redirect(users.create_login_url(self.request.uri))
+            self.redirect("google.com")
+
 
 class DownloadHandler(webapp.RequestHandler):
     def post(self):
@@ -37,8 +72,64 @@ class DownloadHandler(webapp.RequestHandler):
     </body>
 </html>
 """)
+
+        else:
+            # TODO: Needs to redirect the logged in user back to the root.
+            #self.redirect(users.create_login_url(self.request.uri))
+            self.redirect("google.com")
+
+
+class MainHandler(webapp.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+
+        if user:
+            self.response.out.write("""<!DOCTYPE HTML>
+<html>
+    <body>
+        <form action="/upload" method="post">
+            <div><input type="submit" value="Upload a Collection"></div>
+        </form>
+        <form action="/download" method="post">
+            <div><input type="submit" value="Download a Collection"></div>
+        </form>
+        <form action="/xfer" method="post">
+            <div><input type="submit" value="Transfer a Collection"></div>
+        </form>
+    </body>
+</html>
+""")
         else:
             self.redirect(users.create_login_url(self.request.uri))
+
+
+class TransferHandler(webapp.RequestHandler):
+    def post(self):
+        user = users.get_current_user()
+
+        if user:
+            self.response.out.write("""<!DOCTYPE HTML>
+<html>
+    <body>
+        <p>Please enter your BiRG Metabolomics Management credentials & target collection ID.</p>
+        <form action="/cpdata" method="post">
+            <p>BiRG user name:</p>
+            <div><input type="text" name="birgun"></div>
+            <p>BiRG password:</p>
+            <div><input type="text" name="birgpass"></div>
+            <p>BiRG collection ID:</p>
+            <div><input type="text" name="birgcolid"></div>
+            <div><input type="submit" value="Initiate Transfer"></div>
+        </form>
+    </body>
+</html>
+""")
+
+        else:
+            # TODO: Needs to redirect the logged in user back to the root.
+            #self.redirect(users.create_login_url(self.request.uri))
+            self.redirect("google.com")
+
 
 class UploadHandler(webapp.RequestHandler):
     def post(self):
@@ -53,12 +144,17 @@ class UploadHandler(webapp.RequestHandler):
 </html>
 """)
         else:
-            self.redirect(users.create_login_url(self.request.uri))
+            # TODO: Needs to redirect the logged in user back to the root.
+            #self.redirect(users.create_login_url(self.request.uri))
+            self.redirect("google.com")
+
 
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ('/upload', UploadHandler),
-                                          ('/download', DownloadHandler)],
+                                          ('/download', DownloadHandler),
+                                          ('/xfer', TransferHandler),
+                                          ('/cpdata', CopyingHandler)],
                                       debug=True)
     run_wsgi_app(application)
 

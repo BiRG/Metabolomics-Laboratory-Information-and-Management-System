@@ -27,6 +27,3 @@ else:
     study = glims.Study(helper,study_name)
 
 study.upload_files(c)
-
-            
-    
