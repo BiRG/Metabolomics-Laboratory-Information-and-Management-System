@@ -7,9 +7,9 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # From upload.py
-#import collection
-#import glims
-#glims = reload(glims)
+import collection
+import glims
+glims = reload(glims)
 
 
 class CopyingHandler(webapp.RequestHandler):
@@ -26,20 +26,21 @@ class CopyingHandler(webapp.RequestHandler):
             if r.status != 200:
                 raise "Failed to get the collection"
 
+            # TODO: Use Google OpenID federated login
             email = 'glims.test@gmail.com' #raw_input('Google E-mail: ')
             password = 'birglab1' #raw_input("Password: ") #getpass.getpass('Password: ') 
             study_name = 'ANIT' #raw_input("Study name: ")
 
             # Assign the files to folders
-            #helper = glims.Helper(email,password)
-            #potential_studies = helper.get_collections(study_name)
+            helper = glims.Helper(email,password)
+            potential_studies = helper.get_collections(study_name)
 
-            #if len(potential_studies) > 0:
-            #    study = glims.Study(helper,potential_studies[0]['entry']) # Assume it is the one and only return (later this will have to be dynamic)
-            #else:
-            #    study = glims.Study(helper,study_name)
+            if len(potential_studies) > 0:
+                study = glims.Study(helper,potential_studies[0]['entry']) # Assume it is the one and only return (later this will have to be dynamic)
+            else:
+                study = glims.Study(helper,study_name)
 
-            #study.upload_files(c)
+            study.upload_files(c)
             
             # Report success.
             self.response.out.write("""<!DOCTYPE HTML>
@@ -67,6 +68,9 @@ class DownloadHandler(webapp.RequestHandler):
         if user:
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
+    <head>
+        <title></title>
+    </head>
     <body>
         <a href="">Your file is ready.</a>
     </body>
@@ -86,6 +90,9 @@ class MainHandler(webapp.RequestHandler):
         if user:
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
+    <head>
+        <title></title>
+    </head>
     <body>
         <form action="/upload" method="post">
             <div><input type="submit" value="Upload a Collection"></div>
@@ -110,6 +117,9 @@ class TransferHandler(webapp.RequestHandler):
         if user:
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
+    <head>
+        <title></title>
+    </head>
     <body>
         <p>Please enter your BiRG Metabolomics Management credentials & target collection ID.</p>
         <form action="/cpdata" method="post">
@@ -138,6 +148,9 @@ class UploadHandler(webapp.RequestHandler):
         if user:
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
+    <head>
+        <title></title>
+    </head>
     <body>
         <p>Your file is uploaded.</p>
     </body>
