@@ -6,11 +6,13 @@ import re, os, tempfile, bisect
 from collection import *
 
 class Helper:
-    def __init__(self, email, password):
+    #def __init__(self, email, password):
+    def __init__(self):
         self.client = gdata.docs.client.DocsClient(source='helper-0r1')
         self.client.ssl = True  # Force all API requests through HTTPS
         self.client.http_client.debug = False  # Set to True for debugging HTTP requests
-        self.client.ClientLogin(email, password, self.client.source)
+        #self.client.ClientLogin(email, password, self.client.source)
+        #self.client.GetAccessToken()
         self.spreadsheets_client = gdata.spreadsheet.service.SpreadsheetsService(source=self.client.source)
         self.spreadsheets_client.ClientLogin(email, password, self.client.source)
 

@@ -12,6 +12,14 @@ import glims
 glims = reload(glims)
 
 
+class NoCollectionException(Exception):
+    def __init__(self,value):
+        self.specific_msg = value
+
+    def __str__(self):
+        return repr(self.specific_msg)
+
+
 class CopyingHandler(webapp.RequestHandler):
     def post(self):
         user = users.get_current_user()
@@ -24,15 +32,16 @@ class CopyingHandler(webapp.RequestHandler):
             r = c.get_collection(cid,name,password)
 
             if r.status != 200:
-                raise "Failed to get the collection"
+                raise NoCollectionException('Failed to get the collection')
 
             # TODO: Use Google OpenID federated login
-            email = 'glims.test@gmail.com' #raw_input('Google E-mail: ')
-            password = 'birglab1' #raw_input("Password: ") #getpass.getpass('Password: ') 
+            #email = 'glims.test@gmail.com' #raw_input('Google E-mail: ')
+            #password = 'birglab1' #raw_input("Password: ") #getpass.getpass('Password: ') 
             study_name = 'ANIT' #raw_input("Study name: ")
 
             # Assign the files to folders
-            helper = glims.Helper(email,password)
+            #helper = glims.Helper(email,password)
+            helper = glims.Helper()
             potential_studies = helper.get_collections(study_name)
 
             if len(potential_studies) > 0:
