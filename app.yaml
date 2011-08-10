@@ -6,18 +6,30 @@ api_version: 1
 handlers:
 - url: /
   script: main.py
+  login: required
+  secure: always
 
 - url: /index\.html
   script: main.py
+  login: required
+  secure: always
 
 - url: /cpdata
   script: main.py
+  login: required
+  secure: always
 
 - url: /download
   script: main.py
+  login: required
+  secure: always
 
 - url: /upload
   script: main.py
+  login: required
+  secure: always
 
 - url: /xfer
   script: main.py
+  login: required
+  secure: always

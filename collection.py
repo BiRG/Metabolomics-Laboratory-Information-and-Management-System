@@ -1,5 +1,6 @@
 import httplib, urllib, tempfile
-from elementtree.ElementTree import fromstring
+#from elementtree.ElementTree import fromstring
+from xml.etree.ElementTree import fromstring
 
 class Collection:
     def get_collection(self,cid,name,password):
