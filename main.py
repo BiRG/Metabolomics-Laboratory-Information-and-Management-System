@@ -92,6 +92,40 @@ class DownloadHandler(webapp.RequestHandler):
             self.redirect("google.com")
 
 
+class FileSendHandler(webapp.RequestHandler):
+    def post(self):
+        user = users.get_current_user()
+
+        if user:
+            collectionFile = self.request.POST['collectionFile'];
+            
+            # Assign the files to folders
+            helper = glims.Helper()
+            potential_studies = helper.get_collections(study_name)
+            if len(potential_studies) > 0:
+                study = glims.Study(helper,potential_studies[0]['entry']) # Assume it is the one and only return (later this will have to be dynamic)
+            else:
+                study = glims.Study(helper,study_name)
+
+            study.upload_files(c)
+
+            # Report success.
+            self.response.out.write("""<!DOCTYPE HTML>
+<html>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <p>Your file is uploaded.</p>
+    </body>
+</html>
+""")
+        else:
+            # TODO: Needs to redirect the logged in user back to the root.
+            #self.redirect(users.create_login_url(self.request.uri))
+            self.redirect("google.com")
+
+
 class MainHandler(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -161,10 +195,15 @@ class UploadHandler(webapp.RequestHandler):
         <title></title>
     </head>
     <body>
-        <p>Your file is uploaded.</p>
+        <p>Please select the collection file to be uploaded:</p>
+        <form action="/filesent" method="post">
+            <input type="file" name="collectionFile" required="required">
+            <div><input type="submit" value="Initiate Transfer"></div>
+        </form>
     </body>
 </html>
 """)
+            
         else:
             # TODO: Needs to redirect the logged in user back to the root.
             #self.redirect(users.create_login_url(self.request.uri))
@@ -176,7 +215,8 @@ def main():
                                           ('/upload', UploadHandler),
                                           ('/download', DownloadHandler),
                                           ('/xfer', TransferHandler),
-                                          ('/cpdata', CopyingHandler)],
+                                          ('/cpdata', CopyingHandler),
+                                          ('/filesent', FileSendHandler)],
                                       debug=True)
     run_wsgi_app(application)
 
