@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Based on Google's official Python documentation
-import cgi
+#import cgi
 
 from google.appengine.api import users
 from google.appengine.ext import webapp
@@ -25,19 +25,20 @@ class CopyingHandler(webapp.RequestHandler):
         user = users.get_current_user()
 
         if user:
+            
             name = self.request.POST['birgun'];
             password = self.request.POST['birgpass'];
             cid = self.request.POST['birgcolid'];
+            
             c = collection.Collection()
             r = c.get_collection(cid,name,password)
 
             if r.status != 200:
                 raise NoCollectionException('Failed to get the collection')
 
-            # TODO: Use Google OpenID federated login
             #email = 'glims.test@gmail.com' #raw_input('Google E-mail: ')
             #password = 'birglab1' #raw_input("Password: ") #getpass.getpass('Password: ') 
-            study_name = 'ANIT' #raw_input("Study name: ")
+            #study_name = 'ANIT' #raw_input("Study name: ")
 
             # Assign the files to folders
             #helper = glims.Helper(email,password)
@@ -45,7 +46,8 @@ class CopyingHandler(webapp.RequestHandler):
             potential_studies = helper.get_collections(study_name)
 
             if len(potential_studies) > 0:
-                study = glims.Study(helper,potential_studies[0]['entry']) # Assume it is the one and only return (later this will have to be dynamic)
+                # Assume it is the one and only return (later this will have to be dynamic)
+                study = glims.Study(helper,potential_studies[0]['entry'])
             else:
                 study = glims.Study(helper,study_name)
 
@@ -100,14 +102,14 @@ class FileSendHandler(webapp.RequestHandler):
             collectionFile = self.request.POST['collectionFile'];
             
             # Assign the files to folders
-            helper = glims.Helper()
-            potential_studies = helper.get_collections(study_name)
-            if len(potential_studies) > 0:
-                study = glims.Study(helper,potential_studies[0]['entry']) # Assume it is the one and only return (later this will have to be dynamic)
-            else:
-                study = glims.Study(helper,study_name)
-
-            study.upload_files(c)
+            #helper = glims.Helper()
+            #potential_studies = helper.get_collections(study_name)
+            #if len(potential_studies) > 0:
+            #    study = glims.Study(helper,potential_studies[0]['entry']) # Assume it is the one and only return (later this will have to be dynamic)
+            #else:
+            #    study = glims.Study(helper,study_name)
+            #
+            #study.upload_files(c)
 
             # Report success.
             self.response.out.write("""<!DOCTYPE HTML>
@@ -158,6 +160,7 @@ class TransferHandler(webapp.RequestHandler):
         user = users.get_current_user()
 
         if user:
+            helper = glims.Helper()
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
     <head>

@@ -1,6 +1,10 @@
+#!/usr/bin/env python
+from google.appengine.api import users
+#from google.appengine.ext import webapp
 import gdata.docs.data
 import gdata.docs.client
 import gdata.spreadsheet.service
+#import logging
 
 import re, os, tempfile, bisect
 from collection import *
@@ -8,13 +12,22 @@ from collection import *
 class Helper:
     #def __init__(self, email, password):
     def __init__(self):
+        self.user = users.get_current_user()
+        #logging.info('Logged in: '+user.email())
         self.client = gdata.docs.client.DocsClient(source='helper-0r1')
         self.client.ssl = True  # Force all API requests through HTTPS
         self.client.http_client.debug = False  # Set to True for debugging HTTP requests
         #self.client.ClientLogin(email, password, self.client.source)
         #self.client.GetAccessToken()
         self.spreadsheets_client = gdata.spreadsheet.service.SpreadsheetsService(source=self.client.source)
-        self.spreadsheets_client.ClientLogin(email, password, self.client.source)
+        #self.spreadsheets_client.ClientLogin(email, password, self.client.source)
+    
+    def get_studies(self):
+        res = []
+        feed = self.client.GetDocList(uri='/feeds/default/private/full/-/folder?title=BiRG%20Studies%20Data%20-%20DO%20NOT%20RENAME&title-exact=true')
+        for e in feed.entry:
+            res.append({'entry': e, 'resource_id': e.resource_id.text, 'name': e.title.text})
+        return res
 
     def get_collections(self, root_collection_name):
         res = []
