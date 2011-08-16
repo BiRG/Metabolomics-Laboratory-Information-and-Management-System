@@ -12,7 +12,7 @@ import glims
 glims = reload(glims)
 
 
-class NoCollectionException(Exception):
+class NoCollectionWithIDException(Exception):
     def __init__(self,value):
         self.specific_msg = value
 
@@ -29,12 +29,13 @@ class CopyingHandler(webapp.RequestHandler):
             name = self.request.POST['birgun'];
             password = self.request.POST['birgpass'];
             cid = self.request.POST['birgcolid'];
+            study_name = self.request.POST['gdRootCol'];
             
             c = collection.Collection()
             r = c.get_collection(cid,name,password)
 
             if r.status != 200:
-                raise NoCollectionException('Failed to get the collection')
+                raise NoCollectionWithIDException('Failed to get the collection from BiRG')
 
             #email = 'glims.test@gmail.com' #raw_input('Google E-mail: ')
             #password = 'birglab1' #raw_input("Password: ") #getpass.getpass('Password: ') 
@@ -42,12 +43,13 @@ class CopyingHandler(webapp.RequestHandler):
 
             # Assign the files to folders
             #helper = glims.Helper(email,password)
+            
             helper = glims.Helper()
-            potential_studies = helper.get_collections(study_name)
+            potential_study_collections = helper.get_collections(study_name)
 
-            if len(potential_studies) > 0:
+            if len(potential_study_collections) > 0:
                 # Assume it is the one and only return (later this will have to be dynamic)
-                study = glims.Study(helper,potential_studies[0]['entry'])
+                study = glims.Study(helper,potential_study_collections[0]['entry'])
             else:
                 study = glims.Study(helper,study_name)
 
@@ -161,6 +163,12 @@ class TransferHandler(webapp.RequestHandler):
 
         if user:
             helper = glims.Helper()
+            potential_studies = helper.get_studies()
+            
+            option_string = ""
+            for one_study_name in potential_studies:
+                option_string = option_string + '\n                <option>' + one_study_name + '</option>';
+            
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
     <head>
@@ -175,6 +183,9 @@ class TransferHandler(webapp.RequestHandler):
             <div><input type="text" name="birgpass"></div>
             <p>BiRG collection ID:</p>
             <div><input type="text" name="birgcolid"></div>
+            <p>Google Data Study Name:</p>
+            <div><select name="gdRootCol" size="5">""" + option_string + """
+            </select></div>
             <div><input type="submit" value="Initiate Transfer"></div>
         </form>
     </body>
