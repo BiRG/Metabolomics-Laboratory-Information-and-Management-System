@@ -4,12 +4,26 @@
 
 from google.appengine.api import users
 from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.ext.webapp.util import run_wsgi_app, login_required
+import gdata.gauth
+import gdata.docs.client
+
 
 # From upload.py
 import collection
 import glims
 glims = reload(glims)
+
+
+class OAuthSetup:
+    def __init__(self,value):
+        SETTINGS = {
+        'APP_NAME': 'birgdata',
+        'CONSUMER_KEY': 'tempKeyNotGood',
+        'CONSUMER_SECRET': 'MuchLongerBetterKeyNeededSecurely',
+        'SCOPES': ['https://docs.google.com/feeds/']
+        }
+        gdocs = gdata.docs.client.DocsClient(source = SETTINGS['APP_NAME'])
 
 
 class NoCollectionWithIDException(Exception):
@@ -75,6 +89,8 @@ class CopyingHandler(webapp.RequestHandler):
 
 
 class DownloadHandler(webapp.RequestHandler):
+
+    @login_required
     def post(self):
         user = users.get_current_user()
 
@@ -97,6 +113,8 @@ class DownloadHandler(webapp.RequestHandler):
 
 
 class FileSendHandler(webapp.RequestHandler):
+
+    @login_required
     def post(self):
         user = users.get_current_user()
 
@@ -131,6 +149,8 @@ class FileSendHandler(webapp.RequestHandler):
 
 
 class MainHandler(webapp.RequestHandler):
+
+    @login_required
     def get(self):
         user = users.get_current_user()
 
@@ -158,6 +178,8 @@ class MainHandler(webapp.RequestHandler):
 
 
 class TransferHandler(webapp.RequestHandler):
+
+    @login_required
     def post(self):
         user = users.get_current_user()
 
@@ -199,6 +221,8 @@ class TransferHandler(webapp.RequestHandler):
 
 
 class UploadHandler(webapp.RequestHandler):
+
+    @login_required
     def post(self):
         user = users.get_current_user()
 
