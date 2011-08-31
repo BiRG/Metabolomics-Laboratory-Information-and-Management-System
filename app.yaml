@@ -4,6 +4,25 @@ runtime: python
 api_version: 1
 
 handlers:
+- url: /googleb231c98908089a92.html
+  static_files: static/markup/googleb231c98908089a92.html
+  upload: static/markup/googleb231c98908089a92.html
+
+- url: /css
+  static_dir: static/stylesheets
+  login: required
+  secure: always
+
+- url: /img
+  static_dir: static/images
+  login: required
+  secure: always
+
+- url: /js
+  static_dir: static/javascripts
+  login: required
+  secure: always
+
 - url: /
   script: main.py
   login: required
@@ -24,17 +43,27 @@ handlers:
   login: required
   secure: always
 
+- url: /filesent
+  script: main.py
+  login: required
+  secure: always
+
+- url: /mainmenu
+  script: main.py
+  login: required
+  secure: always
+
+- url: /staging
+  script: main.py
+  login: required
+  secure: always
+
 - url: /upload
   script: main.py
   login: required
   secure: always
 
 - url: /xfer
-  script: main.py
-  login: required
-  secure: always
-
-- url: /filesent
   script: main.py
   login: required
   secure: always
