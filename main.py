@@ -23,10 +23,17 @@ glims = reload(glims)
 # check these values into your source code repository.
 SETTINGS = {
     'APP_NAME': 'birgdata',
-    'CONSUMER_KEY': '',
-    'CONSUMER_SECRET': '',
+    'CONSUMER_KEY': 'birgdata.appspot.com',
+    'CONSUMER_SECRET': 'VAeTG4YvQYlmcYS8xwK7V2d6',
     'SCOPES': ['https://docs.google.com/feeds/']
     }
+
+#credfile = open(".credentials.info")
+#credentials = credfile.readlines()
+#credfile.close()
+#if credentials.count() > 1:
+#    SETTINGS['CONSUMER_KEY'] = credentials[0]
+#    SETTINGS['CONSUMER_SECRET'] = credentials[1]
 
 # From http://code.google.com/appengine/articles/python/retrieving_gdata_feeds.html
 # Create an instance of the DocsService to make API calls
