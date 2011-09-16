@@ -50,9 +50,9 @@ class NoCollectionWithIDException(Exception):
 
 class CopyingHandler(webapp.RequestHandler):
     def post(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
 
-        if user:
+        if current_user:
             
             name = self.request.POST['birgun'];
             password = self.request.POST['birgpass'];
@@ -97,18 +97,16 @@ class CopyingHandler(webapp.RequestHandler):
 """ % (name,cid))
 
         else:
-            # TODO: Needs to redirect the logged in user back to the root.
-            #self.redirect(users.create_login_url(self.request.uri))
-            self.redirect("google.com")
+            self.redirect('https://%s/' % self.request.host)
 
 
 class DownloadHandler(webapp.RequestHandler):
 
     @login_required
     def post(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
 
-        if user:
+        if current_user:
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
     <head>
@@ -121,18 +119,16 @@ class DownloadHandler(webapp.RequestHandler):
 """)
 
         else:
-            # TODO: Needs to redirect the logged in user back to the root.
-            #self.redirect(users.create_login_url(self.request.uri))
-            self.redirect("google.com")
+            self.redirect('https://%s/' % self.request.host)
 
 
 class FileSendHandler(webapp.RequestHandler):
 
     @login_required
     def post(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
 
-        if user:
+        if current_user:
             collectionFile = self.request.POST['collectionFile'];
             
             # Assign the files to folders
@@ -157,16 +153,17 @@ class FileSendHandler(webapp.RequestHandler):
 </html>
 """)
         else:
-            # TODO: Needs to redirect the logged in user back to the root.
-            #self.redirect(users.create_login_url(self.request.uri))
-            self.redirect("google.com")
+            self.redirect('https://%s/' % self.request.host)
 
 
 class FrontendHandler(webapp.RequestHandler):
 
     @login_required
     def get(self):
-        self.response.out.write("""<!DOCTYPE HTML>
+        current_user = users.get_current_user()
+        
+        if current_user:
+            self.response.out.write("""<!DOCTYPE HTML>
 <html>
     <head>
         <title></title>
@@ -184,6 +181,8 @@ class FrontendHandler(webapp.RequestHandler):
     </body>
 </html>
 """)
+        else:
+            self.redirect('https://%s/' % self.request.host)
 
 
 # Based on Fetcher class from
@@ -211,7 +210,7 @@ class MainHandler(webapp.RequestHandler):
         # to limit the scope as much as possible. For this
         # example, we just ask for access to all feeds.
         scopes = SETTINGS['SCOPES']
-        oauth_callback = 'http://%s/staging' % self.request.host
+        oauth_callback = 'https://%s/staging' % self.request.host
         consumer_key = SETTINGS['CONSUMER_KEY']
         consumer_secret = SETTINGS['CONSUMER_SECRET']
         request_token = gdocs.get_oauth_token(scopes, oauth_callback,
@@ -281,9 +280,9 @@ class TransferHandler(webapp.RequestHandler):
 
     @login_required
     def post(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
 
-        if user:
+        if current_user:
             helper = glims.Helper()
             potential_studies = helper.get_studies()
             
@@ -315,18 +314,16 @@ class TransferHandler(webapp.RequestHandler):
 """)
 
         else:
-            # TODO: Needs to redirect the logged in user back to the root.
-            #self.redirect(users.create_login_url(self.request.uri))
-            self.redirect("google.com")
+            self.redirect('https://%s/' % self.request.host)
 
 
 class UploadHandler(webapp.RequestHandler):
 
     @login_required
     def post(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
 
-        if user:
+        if current_user:
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
     <head>
@@ -343,9 +340,7 @@ class UploadHandler(webapp.RequestHandler):
 """)
             
         else:
-            # TODO: Needs to redirect the logged in user back to the root.
-            #self.redirect(users.create_login_url(self.request.uri))
-            self.redirect("google.com")
+            self.redirect('https://%s/' % self.request.host)
 
 
 def main():
