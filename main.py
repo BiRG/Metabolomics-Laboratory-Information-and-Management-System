@@ -4,6 +4,9 @@
 
 from google.appengine.api import users
 from google.appengine.ext import webapp
+from google.appengine.ext import blobstore
+from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app, login_required
 import gdata.gauth
 import gdata.docs.client
@@ -46,6 +49,13 @@ class NoCollectionWithIDException(Exception):
 
     def __str__(self):
         return repr(self.specific_msg)
+
+
+class UserSpectraFile(db.Model):
+    owner = db.UserProperty(required=True)
+    #filename = db.StringProperty(required=True)
+    blob_key = db.BlobReferenceProperty(required=True)
+    #data = db.BlobProperty(required=True)
 
 
 class CopyingHandler(webapp.RequestHandler):
@@ -122,14 +132,17 @@ class DownloadHandler(webapp.RequestHandler):
             self.redirect('https://%s/' % self.request.host)
 
 
-class FileSendHandler(webapp.RequestHandler):
+class FileSendHandler(blobstore_handlers.BlobstoreUploadHandler):
 
     @login_required
     def post(self):
         current_user = users.get_current_user()
 
         if current_user:
-            collectionFile = self.request.POST['collectionFile'];
+            # -- DCW: Assume we only want the first file.
+            uploaded = self.get_uploads()[0]
+            collectionFile = UserSpectraFile(owner=users.get_current_user(),
+                                             blob_key=uploaded.key())
             
             # Assign the files to folders
             #helper = glims.Helper()
@@ -140,6 +153,8 @@ class FileSendHandler(webapp.RequestHandler):
             #    study = glims.Study(helper,study_name)
             #
             #study.upload_files(c)
+            
+            db.put(collectionFile)
 
             # Report success.
             self.response.out.write("""<!DOCTYPE HTML>
@@ -203,7 +218,7 @@ class MainHandler(webapp.RequestHandler):
         # user to be sent after they have granted us
         # access. Sometimes, developers generate different URLs
         # based on the environment. You want to set this value to
-        # "http://localhost:8080/step2" if you are running the
+        # "http://localhost:8080/staging" if you are running the
         # development server locally.
         #
         # We also provide the data scope(s). In general, we want
@@ -288,7 +303,8 @@ class TransferHandler(webapp.RequestHandler):
             
             option_string = ""
             for one_study_name in potential_studies:
-                option_string = option_string + '\n                <option>' + one_study_name + '</option>';
+                option_string = option_string + '\n                <option>'
+                option_string = option_string + one_study_name + '</option>'
             
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
@@ -324,6 +340,7 @@ class UploadHandler(webapp.RequestHandler):
         current_user = users.get_current_user()
 
         if current_user:
+            upload_url = blobstore.create_upload_url('/filesent')
             self.response.out.write("""<!DOCTYPE HTML>
 <html>
     <head>
@@ -331,7 +348,7 @@ class UploadHandler(webapp.RequestHandler):
     </head>
     <body>
         <p>Please select the collection file to be uploaded:</p>
-        <form action="/filesent" method="post">
+        <form action=\"""" + upload_url + """\" method="post">
             <input type="file" name="collectionFile" required="required">
             <div><input type="submit" value="Initiate Transfer"></div>
         </form>
